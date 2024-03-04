@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Install all scriptlets, excluding this one,
+# from the current directory to a destination directory.
+
+# Usage function to display.
+usage() {
+  local final_name=$(basename "$0")
+  echo "Usage: $final_name <destination_path>"
+  echo "Example: $final_name /home/you/bin"
+}
+
+# Check if exactly 1 argument is passed.
+# If not, display usage and exit.
+if [ "$#" -ne 1 ]; then
+  usage
+  exit 1
+fi
+
+DESTINATION_PATH=$1
+
+# Verify that the destination path exists.
+if [ ! -d "$DESTINATION_PATH" ]; then
+  echo "Error: The specified destination '$DESTINATION_PATH' does not exist"
+  exit 1
+fi
+
+SCRIPT_PATH=$(realpath "$0")
+SCRIPT_NAME=$(basename "$SCRIPT_PATH")
+
+for file in *; do
+  # Check if the file is an executable.
+  if [[ -x "$file" && -f "$file" ]]; then
+    # Check if the file is not the script itself.
+    if [[ "$file" != "$SCRIPT_NAME" ]]; then
+      echo "Installing $file to '$DESTINATION_PATH'"
+      cp "$file" $DESTINATION_PATH
+    else
+      echo "Skipping script itself: $file"
+    fi
+  fi
+done
+
+echo "Done"
