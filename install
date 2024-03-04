@@ -31,14 +31,24 @@ SCRIPT_NAME=$(basename "$SCRIPT_PATH")
 for file in *; do
   # Check if the file is an executable.
   if [[ -x "$file" && -f "$file" ]]; then
-    # Check if the file is not the script itself.
+    # Copy all files except this one.
     if [[ "$file" != "$SCRIPT_NAME" ]]; then
       echo "Installing $file to '$DESTINATION_PATH'"
       cp "$file" $DESTINATION_PATH
-    else
-      echo "Skipping script itself: $file"
     fi
   fi
 done
+
+# Verify that installation was successful.
+if ! hello > /dev/null 2>&1; then
+  if [ ! -f "$DESTINATION_PATH/hello" ]; then
+    echo "Installation unsuccessful: hello file not found"
+    echo "Verify that all scriptlets were copied to '$DESTINATION_PATH'"
+  else
+    echo "Installation unsuccessful: hello command not found"
+    echo "Verify that '$DESTINATION_PATH' is in PATH"
+  fi
+  exit 1
+fi
 
 echo "Done"
