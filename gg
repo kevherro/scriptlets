@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# git go (gg): Quickly git push a change
+
+# Usage function to display help.
+usage() {
+  echo "Usage: gg <COMMIT_MESSAGE>"
+  echo 'Example: gg "pour free range coconut oil"'
+}
+
+# Check if exactly 1 argument is passed.
+# If not, display usage and exit.
+if [ "$#" -ne 1 ]; then
+  usage
+  exit 1
+fi
+
+COMMIT_MESSAGE=$1
+
+git add .
+git commit -m "$COMMIT_MESSAGE"
+git push
