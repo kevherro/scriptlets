@@ -1,23 +1,9 @@
 #!/bin/bash
 
 # Install all scriptlets, excluding this one,
-# from the current directory to a destination directory.
+# from the current directory to /usr/local/bin.
 
-# Usage function to display.
-usage() {
-  local final_name=$(basename "$0")
-  echo "Usage: $final_name <destination_path>"
-  echo "Example: $final_name /home/you/bin"
-}
-
-# Check if exactly 1 argument is passed.
-# If not, display usage and exit.
-if [ "$#" -ne 1 ]; then
-  usage
-  exit 1
-fi
-
-DESTINATION_PATH=$1
+DESTINATION_PATH="/usr/local/bin"
 
 # Verify that the destination path exists.
 if [ ! -d "$DESTINATION_PATH" ]; then
@@ -25,8 +11,14 @@ if [ ! -d "$DESTINATION_PATH" ]; then
   exit 1
 fi
 
-SCRIPT_PATH=$(realpath "$0")
+SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
 SCRIPT_NAME=$(basename "$SCRIPT_PATH")
+
+# Verify running as root or with sudo for copying to /usr/local/bin.
+if [ "$(id -u)" -ne 0 ]; then
+  echo "Error: Please run as root or use sudo to install to '$DESTINATION_PATH'."
+  exit 1
+fi
 
 for file in *; do
   # Check if the file is an executable.
@@ -34,21 +26,20 @@ for file in *; do
     # Copy all files except this one.
     if [[ "$file" != "$SCRIPT_NAME" ]]; then
       echo "Installing $file to '$DESTINATION_PATH'"
-      cp "$file" $DESTINATION_PATH
+      if ! cp "$file" "$DESTINATION_PATH"; then
+        echo "Error: Failed to copy $file to $DESTINATION_PATH."
+        exit 1
+      fi
     fi
   fi
 done
 
-# Verify that installation was successful.
-if ! hello > /dev/null 2>&1; then
-  if [ ! -f "$DESTINATION_PATH/hello" ]; then
-    echo "Installation unsuccessful: hello file not found"
-    echo "Verify that all scriptlets were copied to '$DESTINATION_PATH'"
-  else
-    echo "Installation unsuccessful: hello command not found"
-    echo "Verify that '$DESTINATION_PATH' is in PATH"
-  fi
+# Check if at least one file has been successfully copied.
+if [ "$(ls -1 $DESTINATION_PATH | wc -l)" -eq 0 ]; then
+  echo "Installation unsuccessful: No files were copied to '$DESTINATION_PATH'."
   exit 1
+else
+  echo "Installation successful."
 fi
 
-echo "Done"
+echo "Done."

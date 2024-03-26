@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Install a list of pre-defined packages.
+
+PACKAGES="cmake curl git htop ripgrep stow wget"
+
+ensure_homebrew() {
+  if ! command -v brew >/dev/null 2>&1; then
+    echo "Homebrew not found. Installing Homebrew..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  else
+    echo "Homebrew is already installed."
+  fi
+
+  echo "Updating Homebrew..."
+  brew update
+
+  echo "Upgrading Homebrew..."
+  brew upgrade
+}
+
+install_packages() {
+  for package in $PACKAGES; do
+    if brew list $package >/dev/null 2>&1; then
+      echo "$package is already installed."
+    else
+      echo "Installing $package..."
+      brew install $package
+    fi
+  done
+}
+
+ensure_homebrew
+
+install_packages
