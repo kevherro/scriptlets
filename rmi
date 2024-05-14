@@ -1,0 +1,6 @@
+#!/bin/bash
+
+read -p "remove $@? " response
+if [[ "$response" == "yes" || "$response" == "y" ]]; then
+  rm -rf "$@"
+fi
